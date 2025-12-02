@@ -1,10 +1,11 @@
-// lib/screens/list_complaints_screen.dart
+// lib/screens/listar_denuncias_screen.dart
 
 import 'package:flutter/material.dart';
 import '../models/denuncia_model.dart';
 import '../services/api_service.dart';
-import 'detalle_denuncia_screen.dart'; // Necesitas esta pantalla para la navegación
-import 'nueva_denuncia_screen.dart'; // Para navegar a crear denuncia
+import 'detalle_denuncia_screen.dart'; 
+import 'nueva_denuncia_screen.dart'; 
+import 'login_screen.dart'; // Importar login
 
 class ListComplaintsScreen extends StatefulWidget {
   const ListComplaintsScreen({super.key});
@@ -14,7 +15,6 @@ class ListComplaintsScreen extends StatefulWidget {
 }
 
 class _ListComplaintsScreenState extends State<ListComplaintsScreen> {
-  // Inicializamos la llamada a la API en un Future
   late Future<List<Denuncia>> _denunciasFuture;
   final ApiService _apiService = ApiService();
 
@@ -24,29 +24,28 @@ class _ListComplaintsScreenState extends State<ListComplaintsScreen> {
     _denunciasFuture = _apiService.listarDenuncias();
   }
 
-  // Método para recargar la lista (usado por pull-to-refresh)
+  // Método para recargar la lista
   Future<void> _refreshDenuncias() async {
     setState(() {
       _denunciasFuture = _apiService.listarDenuncias();
     });
   }
 
-  // Navegar al detalle
-  void _navigateToDetail(int id) {
+  // Navegar al detalle (MODIFICADO: id es String)
+  void _navigateToDetail(String id) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => DetailComplaintScreen(denunciaId: id),
       ),
     ).then((_) {
-      // Recargar la lista si se regresa, en caso de que se haya creado una nueva denuncia
       _refreshDenuncias();
     });
   }
   
   // Navegar a crear denuncia
   void _navigateToNewComplaint() async {
-    // Esperamos el resultado de la pantalla de creación (true si se creó con éxito)
+    // Esperamos el resultado
     final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const NewComplaintScreen()),
@@ -57,6 +56,21 @@ class _ListComplaintsScreenState extends State<ListComplaintsScreen> {
       _refreshDenuncias();
     }
   }
+  
+  // NUEVO MÉTODO: Cierre de Sesión
+  void _handleLogout() async {
+    await _apiService.deleteToken(); // Borra el token seguro
+    
+    // Navega a la pantalla de Login y elimina el historial de navegación
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (Route<dynamic> route) => false,
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -70,9 +84,13 @@ class _ListComplaintsScreenState extends State<ListComplaintsScreen> {
             tooltip: 'Nueva Denuncia',
             onPressed: _navigateToNewComplaint,
           ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar Sesión',
+            onPressed: _handleLogout,
+          ),
         ],
       ),
-      // Implementa el pull-to-refresh
       body: RefreshIndicator( 
         onRefresh: _refreshDenuncias,
         child: FutureBuilder<List<Denuncia>>(
@@ -89,7 +107,7 @@ class _ListComplaintsScreenState extends State<ListComplaintsScreen> {
               );
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return Center(
-                child: ListView( // Usamos ListView para que el RefreshIndicator funcione
+                child: ListView( 
                   children: const [
                     SizedBox(height: 100),
                     Icon(Icons.inbox, size: 50, color: Colors.grey),
@@ -98,14 +116,13 @@ class _ListComplaintsScreenState extends State<ListComplaintsScreen> {
                 ),
               );
             } else {
-              // Muestra el listado de denuncias
               return ListView.builder(
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
                   final denuncia = snapshot.data![index];
                   return DenunciaListItem(
                     denuncia: denuncia,
-                    onTap: () => _navigateToDetail(denuncia.id),
+                    onTap: () => _navigateToDetail(denuncia.id), // ID es String
                   );
                 },
               );
@@ -117,7 +134,7 @@ class _ListComplaintsScreenState extends State<ListComplaintsScreen> {
   }
 }
 
-// Widget auxiliar para cada elemento de la lista
+// Widget auxiliar para cada elemento de la lista (se mantiene igual)
 class DenunciaListItem extends StatelessWidget {
   final Denuncia denuncia;
   final VoidCallback onTap;
@@ -135,7 +152,6 @@ class DenunciaListItem extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: ListTile(
         contentPadding: const EdgeInsets.all(8),
-        // Muestra la miniatura de la foto
         leading: Container( 
           width: 60,
           height: 60,
@@ -147,7 +163,6 @@ class DenunciaListItem extends StatelessWidget {
             ),
           ),
         ),
-        // Muestra el correo y la descripción
         title: Text(
           denuncia.correo,
           style: const TextStyle(fontWeight: FontWeight.bold),

@@ -1,11 +1,12 @@
-// lib/screens/detail_complaint_screen.dart
+// lib/screens/detalle_denuncia_screen.dart
 
 import 'package:flutter/material.dart';
 import '../models/denuncia_model.dart';
 import '../services/api_service.dart';
 
 class DetailComplaintScreen extends StatelessWidget {
-  final int denunciaId;
+  // MODIFICADO: Ahora el ID es String (UUID)
+  final String denunciaId; 
   final ApiService _apiService = ApiService(); 
 
   DetailComplaintScreen({required this.denunciaId, super.key});
@@ -17,6 +18,7 @@ class DetailComplaintScreen extends StatelessWidget {
         title: const Text('Detalle de Denuncia'),
         backgroundColor: Colors.red[800],
       ),
+      // El FutureBuilder llama a obtenerDetalle con el String ID
       body: FutureBuilder<Denuncia>(
         future: _apiService.obtenerDetalle(denunciaId),
         builder: (context, snapshot) {

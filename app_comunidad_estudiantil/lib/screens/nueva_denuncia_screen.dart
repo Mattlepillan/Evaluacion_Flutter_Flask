@@ -1,4 +1,4 @@
-// lib/screens/new_complaint_screen.dart
+// lib/screens/nueva_denuncia_screen.dart
 
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -200,7 +200,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
 
               // --- BOTÓN FOTO (Ahora llama al selector) ---
               ElevatedButton.icon(
-                onPressed: _selectImageSource, // <-- Llama a la nueva función de selección
+                onPressed: _selectImageSource, 
                 icon: const Icon(Icons.camera_alt),
                 label: Text(_imageFile == null ? '1. Adjuntar Foto (Obligatorio)' : 'Foto Seleccionada'),
                 style: ElevatedButton.styleFrom(
